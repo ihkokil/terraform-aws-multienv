@@ -1,0 +1,153 @@
+name: "Terraform Apply"
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "environments/**"
+      - "modules/**"
+      - ".github/workflows/terraform-apply.yml"
+  workflow_dispatch:
+    inputs:
+      target_environment:
+        description: "Select target environment to deploy"
+        required: true
+        default: "dev"
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+          - all
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  apply-dev:
+    name: "Deploy Dev Environment"
+    if: ${{ github.event_name == 'push' || inputs.target_environment == 'dev' || inputs.target_environment == 'all' }}
+    runs-on: ubuntu-latest
+    environment: dev
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.5.7"
+
+      - name: Configure AWS Credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
+          role-session-name: GitHubActions-TerraformApply-Dev
+
+      - name: Get AWS Account ID
+        id: aws-identity
+        run: |
+          ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+          echo "account_id=${ACCOUNT_ID}" >> $GITHUB_OUTPUT
+
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="bucket=tfstate-${{ steps.aws-identity.outputs.account_id }}-${{ secrets.AWS_REGION || 'us-east-1' }}" \
+            -backend-config="region=${{ secrets.AWS_REGION || 'us-east-1' }}" \
+            -backend-config="dynamodb_table=terraform-state-lock" \
+            -backend-config="key=dev/terraform.tfstate"
+        working-directory: environments/dev
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+        working-directory: environments/dev
+
+  apply-staging:
+    name: "Deploy Staging Environment"
+    needs: apply-dev
+    if: ${{ always() && (github.event_name == 'push' || inputs.target_environment == 'staging' || inputs.target_environment == 'all') }}
+    runs-on: ubuntu-latest
+    environment: staging
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.5.7"
+
+      - name: Configure AWS Credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
+          role-session-name: GitHubActions-TerraformApply-Staging
+
+      - name: Get AWS Account ID
+        id: aws-identity
+        run: |
+          ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+          echo "account_id=${ACCOUNT_ID}" >> $GITHUB_OUTPUT
+
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="bucket=tfstate-${{ steps.aws-identity.outputs.account_id }}-${{ secrets.AWS_REGION || 'us-east-1' }}" \
+            -backend-config="region=${{ secrets.AWS_REGION || 'us-east-1' }}" \
+            -backend-config="dynamodb_table=terraform-state-lock" \
+            -backend-config="key=staging/terraform.tfstate"
+        working-directory: environments/staging
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+        working-directory: environments/staging
+
+  apply-prod:
+    name: "Deploy Production Environment"
+    needs: apply-staging
+    if: ${{ always() && (github.event_name == 'push' || inputs.target_environment == 'prod' || inputs.target_environment == 'all') }}
+    runs-on: ubuntu-latest
+    # Prod environment protection rules in GitHub will enforce manual approval gate here!
+    environment: prod
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.5.7"
+
+      - name: Configure AWS Credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
+          role-session-name: GitHubActions-TerraformApply-Prod
+
+      - name: Get AWS Account ID
+        id: aws-identity
+        run: |
+          ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+          echo "account_id=${ACCOUNT_ID}" >> $GITHUB_OUTPUT
+
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="bucket=tfstate-${{ steps.aws-identity.outputs.account_id }}-${{ secrets.AWS_REGION || 'us-east-1' }}" \
+            -backend-config="region=${{ secrets.AWS_REGION || 'us-east-1' }}" \
+            -backend-config="dynamodb_table=terraform-state-lock" \
+            -backend-config="key=prod/terraform.tfstate"
+        working-directory: environments/prod
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+        working-directory: environments/prod
