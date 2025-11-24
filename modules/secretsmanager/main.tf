@@ -2,7 +2,7 @@ data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
 locals {
-  name_prefix = "${var.project_name}-${var.environment}"
+  name_prefix      = "${var.project_name}-${var.environment}"
   full_secret_name = "${local.name_prefix}-${var.secret_name}"
   common_tags = merge(
     {

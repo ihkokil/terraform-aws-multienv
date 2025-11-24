@@ -8,6 +8,6 @@ app_runner_memory           = "2048"
 secret_recovery_window_days = 30
 enable_secret_rotation      = true
 tags = {
-  Owner       = "prod-ops-team"
-  Compliance  = "SOC2"
+  Owner      = "prod-ops-team"
+  Compliance = "SOC2"
 }

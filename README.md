@@ -1,4 +1,4 @@
-# Terraform Multi-Environment AWS Infrastructure (`terraform-aws-multienv`)
+# Terraform Multi-Environment AWS Infrastructure
 
 A production-ready, modular Terraform repository provisioning isolated AWS infrastructure across `dev`, `staging`, and `prod` environments. It features automated S3 + DynamoDB state locking, AWS Secrets Manager with KMS encryption, App Runner application services with ECR, VPC networking across multiple AZs, and keyless GitHub Actions CI/CD pipelines using AWS OIDC.
 
@@ -166,3 +166,17 @@ To tear down resources safely:
    gh secret set AWS_ROLE_ARN -b "arn:aws:iam::YOUR_ACCOUNT_ID:role/github-actions-terraform-role"
    gh secret set AWS_REGION -b "us-east-1"
    ```
+
+---
+
+## 👤 Author & Contact
+
+**Md. Iqbal Haider Khan**
+- Email: [ihkokil@gmail.com](mailto:ihkokil@gmail.com)
+- LinkedIn: [https://www.linkedin.com/in/ihkokil/](https://www.linkedin.com/in/ihkokil/)
+- GitHub: [https://www.github.com/ihkokil/](https://www.github.com/ihkokil/)
+
+## 📜 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+

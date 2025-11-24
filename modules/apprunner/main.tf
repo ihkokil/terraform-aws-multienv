@@ -157,7 +157,7 @@ resource "aws_apprunner_service" "app" {
       image_repository_type = length(regexall("^public.ecr.aws", var.image_uri)) > 0 ? "ECR_PUBLIC" : "ECR"
 
       image_configuration {
-        port                        = "8080"
+        port                          = "8080"
         runtime_environment_variables = var.env_vars
       }
     }

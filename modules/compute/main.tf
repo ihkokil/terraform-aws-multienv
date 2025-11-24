@@ -14,7 +14,7 @@ data "aws_ami" "amazon_linux_2023" {
 }
 
 locals {
-  name_prefix = "${var.project_name}-${var.environment}"
+  name_prefix  = "${var.project_name}-${var.environment}"
   selected_ami = var.ami_id != null ? var.ami_id : data.aws_ami.amazon_linux_2023.id
   common_tags = merge(
     {
