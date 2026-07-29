@@ -166,3 +166,13 @@ To tear down resources safely:
    gh secret set AWS_ROLE_ARN -b "arn:aws:iam::YOUR_ACCOUNT_ID:role/github-actions-terraform-role"
    gh secret set AWS_REGION -b "us-east-1"
    ```
+
+---
+
+## 👤 Author & Contact
+
+**Md. Iqbal Haider Khan**
+- Email: [ihkokil@gmail.com](mailto:ihkokil@gmail.com)
+- LinkedIn: [https://www.linkedin.com/in/ihkokil/](https://www.linkedin.com/in/ihkokil/)
+- GitHub: [https://www.github.com/ihkokil/](https://www.github.com/ihkokil/)
+
